@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>{{ title }}</h2>
+  <form method="post">
+    {% csrf_token %}
+    {% if user_form %}
+      {{ user_form.as_p }}
+    {% endif %}
+    {{ member_form.as_p }}
+    <button type="submit">Save</button>
+    <a href="{% url 'member_list' %}">Cancel</a>
+  </form>
+{% endblock %}

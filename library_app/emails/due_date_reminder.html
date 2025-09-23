@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Due Date Reminder</title>
+</head>
+<body>
+    <h2>Due Date Reminder</h2>
+    <p>Dear {{ member.user.get_full_name }},</p>
+    <p>This is a reminder that the book <strong>{{ book.title }}</strong> by {{ book.author }} is due on <strong>{{ borrow_record.due_date|date:"F j, Y" }}</strong>.</p>
+    <p>Please return the book on or before the due date to avoid late fees.</p>
+    <p>Thank you,<br>The Library Team</p>
+</body>
+</html>

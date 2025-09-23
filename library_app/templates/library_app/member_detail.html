@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Member Detail</h2>
+<p><strong>Name:</strong> {{ member.user.get_full_name }}</p>
+<p><strong>Email:</strong> {{ member.user.email }}</p>
+<p><strong>Member ID:</strong> {{ member.member_id }}</p>
+<p><strong>Phone:</strong> {{ member.phone }}</p>
+
+<h3>Borrow Records</h3>
+<ul>
+  {% for record in borrow_records %}
+    <li>{{ record.book.title }} - Borrowed on {{ record.borrow_date|date:"Y-m-d" }}</li>
+  {% empty %}
+    <li>No borrow history.</li>
+  {% endfor %}
+</ul>
+
+<h3>Reservations</h3>
+<ul>
+  {% for res in reservations %}
+    <li>{{ res.book.title }} - Reserved on {{ res.reservation_date|date:"Y-m-d" }}</li>
+  {% empty %}
+    <li>No reservations.</li>
+  {% endfor %}
+</ul>
+
+<a href="{% url 'member_edit' member.pk %}">Edit</a> |
+<a href="{% url 'member_delete' member.pk %}">Delete</a>
+{% endblock %}

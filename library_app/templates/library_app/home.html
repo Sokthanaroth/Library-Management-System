@@ -1,0 +1,80 @@
+{% extends 'library_app/base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="hero-section text-center">
+    <h1 class="display-4">Welcome to Our Library</h1>
+    <p class="lead">Discover, Learn, and Explore with Our Extensive Collection</p>
+    <a href="{% url 'book_list' %}" class="btn btn-primary btn-lg">Browse Collection</a>
+</div>
+
+<div class="row mb-5">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-search-heart display-4 text-primary mb-3"></i>
+                <h3>Find Books</h3>
+                <p>Search our extensive collection of books by title, author, or category.</p>
+                <form action="{% url 'book_list' %}" method="get" class="mt-3">
+                    <div class="input-group">
+                        <input type="text" name="q" class="form-control" placeholder="Search books...">
+                        <button class="btn btn-primary" type="submit">Search</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-people display-4 text-success mb-3"></i>
+                <h3>Become a Member</h3>
+                <p>Join our library community to borrow books and access exclusive resources.</p>
+                {% if user.is_authenticated %}
+                <a href="{% url 'profile' %}" class="btn btn-success mt-3">View Profile</a>
+                {% else %}
+                <a href="{% url 'register' %}" class="btn btn-success mt-3">Register Now</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <i class="bi bi-info-circle display-4 text-info mb-3"></i>
+                <h3>Library Information</h3>
+                <p>Find out about our opening hours, policies, and upcoming events.</p>
+                <a href="#" class="btn btn-info mt-3">Learn More</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2 class="mb-4">Recently Added Books</h2>
+<div class="row">
+    {% for book in books %}
+    <div class="col-md-3 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ book.title }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ book.author }}</h6>
+                <p class="card-text">
+                    <small class="text-muted">ISBN: {{ book.isbn }}</small><br>
+                    <span class="status-{{ book.status }}">
+                        <i class="bi bi-circle-fill"></i> {{ book.get_status_display }}
+                    </span>
+                </p>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'book_detail' book.pk %}" class="btn btn-sm btn-outline-primary">View Details</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <p class="text-center">No books available yet.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'library_app/base.html' %}
+
+{% block title %}Borrow Book{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Borrow Book</h3>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="id_book" class="form-label">Book</label>
+                        {{ form.book }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_member" class="form-label">Member</label>
+                        {{ form.member }}
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_due_date" class="form-label">Due Date</label>
+                        {{ form.due_date }}
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Process Borrow</button>
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+            input.classList.add('form-control');
+        });
+    });
+</script>
+{% endblock %}

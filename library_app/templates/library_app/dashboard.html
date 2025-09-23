@@ -1,0 +1,75 @@
+{% extends 'library_app/base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2 class="mb-4">Library Dashboard</h2>
+
+<div class="row mb-5">
+    <div class="col-md-3">
+        <div class="dashboard-stat stat-books">
+            <i class="bi bi-book display-4"></i>
+            <h3>{{ total_books }}</h3>
+            <p>Total Books</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-stat stat-members">
+            <i class="bi bi-people display-4"></i>
+            <h3>{{ total_members }}</h3>
+            <p>Total Members</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-stat stat-borrowed">
+            <i class="bi bi-arrow-up-circle display-4"></i>
+            <h3>{{ borrowed_books }}</h3>
+            <p>Books Borrowed</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="dashboard-stat stat-overdue">
+            <i class="bi bi-exclamation-triangle display-4"></i>
+            <h3>{{ overdue_books }}</h3>
+            <p>Overdue Books</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'book_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Add New Book
+                    </a>
+                    <a href="{% url 'member_create' %}" class="btn btn-success">
+                        <i class="bi bi-person-plus"></i> Add New Member
+                    </a>
+                    <!-- Borrow / Return require a book_id, so we can link to book list instead -->
+                    <a href="{% url 'book_list' %}" class="btn btn-warning">
+                        <i class="bi bi-arrow-up-circle"></i> Borrow Book
+                    </a>
+                    <a href="{% url 'book_list' %}" class="btn btn-info">
+                        <i class="bi bi-arrow-down-circle"></i> Return Book
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Recent Activities</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Activity tracking will be implemented in the next version.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'library_app/base.html' %}
+
+{% block title %}Members{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Library Members</h2>
+    {% if user.is_staff %}
+    <a href="{% url 'member_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Add New Member
+    </a>
+    {% endif %}
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Search & Filter</h5>
+        <form method="get">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <input type="text" name="q" class="form-control" placeholder="Search by name or email..." value="{{ query }}">
+                </div>
+                <div class="col-md-2 mb-3">
+                    <select name="status" class="form-select">
+                        <option value="">All Statuses</option>
+                        {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <select name="membership_type" class="form-select">
+                        <option value="">All Types</option>
+                        {% for type in membership_types %}
+                        <option value="{{ type }}" {% if type_filter == type %}selected{% endif %}>{{ type }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <button type="submit" class="btn btn-primary w-100">Apply</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    {% for member in members %}
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ member.user.get_full_name }}</h5>
+                <p class="card-text">
+                    Email: {{ member.user.email }}<br>
+                    Status: {{ member.status }}<br>
+                    Type: {{ member.membership_type }}
+                </p>
+            </div>
+            <div class="card-footer d-flex justify-content-between">
+                <a href="{% url 'member_detail' member.id %}" class="btn btn-sm btn-outline-primary">View</a>
+                {% if user.is_staff %}
+                <a href="{% url 'member_edit' member.id %}" class="btn btn-sm btn-primary">Edit</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            No members found. {% if user.is_staff %}<a href="{% url 'member_create' %}">Add the first member</a>{% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ✅ Pagination Controls -->
+{% if members.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if members.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ members.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">&laquo;</span>
+        </li>
+        {% endif %}
+
+        {% for i in members.paginator.page_range %}
+            {% if members.number == i %}
+            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if members.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ members.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link">&raquo;</span>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

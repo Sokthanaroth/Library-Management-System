@@ -1,0 +1,193 @@
+{% extends 'library_app/base.html' %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Profile Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="id_first_name" class="form-label">First Name</label>
+                        {{ user_form.first_name }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_last_name" class="form-label">Last Name</label>
+                        {{ user_form.last_name }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">Email</label>
+                        {{ user_form.email }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_phone" class="form-label">Phone</label>
+                        {{ member_form.phone }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_date_of_birth" class="form-label">Date of Birth</label>
+                        {{ member_form.date_of_birth }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="id_address" class="form-label">Address</label>
+                        {{ member_form.address }}
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                    </div>
+                </form>
+                
+                <hr>
+                
+                <div class="d-grid">
+                    <a href="{% url 'change_password' %}" class="btn btn-outline-secondary">Change Password</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Member Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Member ID:</strong> {{ member.member_id }}</p>
+                        <p><strong>Membership Type:</strong> {{ member.get_membership_type_display }}</p>
+                        <p><strong>Membership Status:</strong> 
+                            <span class="badge bg-{% if member.is_membership_valid %}success{% else %}danger{% endif %}">
+                                {% if member.is_membership_valid %}Active{% else %}Inactive{% endif %}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Membership Date:</strong> {{ member.membership_date }}</p>
+                        <p><strong>Expiration Date:</strong> {{ member.expiration_date }}</p>
+                        <p><strong>Fine Balance:</strong> ${{ member.fine_balance }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">Borrowing History</h5>
+            </div>
+            <div class="card-body">
+                {% if borrow_records %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th>Borrow Date</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Status</th>
+                                <th>Fine</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in borrow_records %}
+                            <tr>
+                                <td>{{ record.book.title }}</td>
+                                <td>{{ record.borrow_date|date:"M d, Y" }}</td>
+                                <td>{{ record.due_date|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if record.return_date %}
+                                        {{ record.return_date|date:"M d, Y" }}
+                                    {% else %}
+                                        <span class="badge bg-warning">Not returned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.return_date %}
+                                        <span class="badge bg-success">Returned</span>
+                                    {% elif record.is_overdue %}
+                                        <span class="badge bg-danger">Overdue</span>
+                                    {% else %}
+                                        <span class="badge bg-primary">Borrowed</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.fine_amount %}
+                                        ${{ record.fine_amount }}
+                                    {% else %}
+                                        $0.00
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">No borrowing history found.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">My Reservations</h5>
+            </div>
+            <div class="card-body">
+                {% if reservations %}
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th>Reservation Date</th>
+                                <th>Expiry Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reservation in reservations %}
+                            <tr>
+                                <td>{{ reservation.book.title }}</td>
+                                <td>{{ reservation.reservation_date|date:"M d, Y" }}</td>
+                                <td>{{ reservation.expiry_date|date:"M d, Y" }}</td>
+                                <td>
+                                    <span class="badge bg-{% if reservation.status == 'active' %}primary{% elif reservation.status == 'fulfilled' %}success{% else %}secondary{% endif %}">
+                                        {{ reservation.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-center">No active reservations.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.classList.add('form-control');
+        });
+    });
+</script>
+{% endblock %}
+{% endblock %}
