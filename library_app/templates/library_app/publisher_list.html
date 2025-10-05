@@ -1,0 +1,27 @@
+{% extends "library_app/base.html" %}
+{% block content %}
+<h2>Publishers</h2>
+<a href="{% url 'publisher_create' %}" class="btn btn-primary mb-2">Add Publisher</a>
+<form method="get">
+    <input type="text" name="q" placeholder="Search publishers..." value="{{ query }}">
+    <button type="submit">Search</button>
+</form>
+<table class="table">
+    <tr>
+        <th>Name</th>
+        <th>Website</th>
+        <th>Actions</th>
+    </tr>
+    {% for publisher in publishers %}
+    <tr>
+        <td>{{ publisher.name }}</td>
+        <td><a href="{{ publisher.website }}">{{ publisher.website }}</a></td>
+        <td>
+            <a href="{% url 'publisher_detail' publisher.pk %}">View</a> |
+            <a href="{% url 'publisher_update' publisher.pk %}">Edit</a> |
+            <a href="{% url 'publisher_delete' publisher.pk %}">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endblock %}

@@ -13,6 +13,21 @@ urlpatterns = [
     path('books/<int:pk>/edit/', views.book_update, name='book_update'),
     path('books/<int:pk>/delete/', views.book_delete, name='book_delete'),
 
+    # Authors
+    path('authors/', views.author_list, name='author_list'),
+    path('authors/add/', views.author_create, name='author_create'),
+    path('authors/<int:pk>/', views.author_detail, name='author_detail'),
+    path('authors/<int:pk>/edit/', views.author_update, name='author_update'),
+    path('authors/<int:pk>/delete/', views.author_delete, name='author_delete'),
+
+    # Publishers
+    path('publishers/', views.publisher_list, name='publisher_list'),
+    path('publishers/add/', views.publisher_create, name='publisher_create'),
+    path('publishers/<int:pk>/', views.publisher_detail, name='publisher_detail'),
+    path('publishers/<int:pk>/edit/', views.publisher_update, name='publisher_update'),
+    path('publishers/<int:pk>/delete/', views.publisher_delete, name='publisher_delete'),
+
+
     # Borrow / Return
     path('books/<int:book_id>/borrow/', views.borrow_book, name='borrow_book'),
     path('books/<int:book_id>/return/', views.return_book, name='return_book'),
@@ -34,7 +49,7 @@ urlpatterns = [
     path('password-reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='library_app/password_reset_done.html'), name='password_reset_done'),
     path('password-reset/confirm/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='library_app/password_reset_confirm.html'), name='password_reset_confirm'),
     path('password-reset/complete/', auth_views.PasswordResetCompleteView.as_view(template_name='library_app/password_reset_complete.html'), name='password_reset_complete'),
-
+    path('register/', views.register, name='register'),
     # Categories
     path('categories/', views.CategoryListView.as_view(), name='category_list'),
     path('categories/add/', views.CategoryCreateView.as_view(), name='category_create'),
@@ -44,8 +59,8 @@ urlpatterns = [
 
 # Profile
     path('profile/', views.profile_view, name='profile'),
-
     path('password-change/', auth_views.PasswordChangeView.as_view(template_name='library_app/change_password.html'), name='change_password'),
     path('password-change/done/', auth_views.PasswordChangeDoneView.as_view(template_name='library_app/change_password_done.html'), name='password_change_done'),
+
 ]
 

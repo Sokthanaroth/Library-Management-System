@@ -1,0 +1,17 @@
+{% extends "library_app/base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ book.title }}</h2>
+  <p><strong>Subtitle:</strong> {{ book.subtitle }}</p>
+  <p><strong>Authors:</strong> {{ book.author_names }}</p>
+  <p><strong>Publisher:</strong> {{ book.publisher }}</p>
+  <p><strong>Categories:</strong> {{ book.category_names }}</p>
+  <p><strong>Status:</strong> {{ book.get_status_display }}</p>
+  <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+  <p><strong>Description:</strong></p>
+  <div>{{ book.description|safe }}</div>
+  
+  <a href="{% url 'borrow_book' book.id %}" class="btn btn-primary">Borrow</a>
+  <a href="{% url 'return_book' book.id %}" class="btn btn-success">Return</a>
+</div>
+{% endblock %}

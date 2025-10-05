@@ -1,22 +1,20 @@
-import csv
-import json
-from io import TextIOWrapper
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, authenticate
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db.models import Q
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.urls import reverse_lazy
-from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
-from django.contrib.auth.decorators import login_required
-
-from .models import Book, Member, BorrowRecord, Category
-from .forms import BookForm, CategoryForm, UserRegistrationForm
+from .forms import UserUpdateForm, MemberUpdateForm
+from .models import Book, Member, BorrowRecord, Category, Author, Publisher
+from .forms import (
+    BookForm, CategoryForm, MemberForm, UserRegistrationForm,
+    UserUpdateForm, AuthorForm, PublisherForm
+)
 from .decorators import librarian_required
-
+from django.contrib.auth import authenticate, login, logout
 
 # ---------------------- Public Views ----------------------
 def home(request):
@@ -187,7 +185,27 @@ def return_book(request, book_id):
 @login_required
 @user_passes_test(librarian_required)
 def member_list(request):
+    query = request.GET.get('q', '')
+    status_filter = request.GET.get('status', '')
+    role_filter = request.GET.get('role', '')
+
     members = Member.objects.all().order_by('id')
+
+    if query:
+        members = members.filter(
+            Q(user__first_name__icontains=query) |
+            Q(user__last_name__icontains=query) |
+            Q(user__email__icontains=query)
+        )
+    if status_filter:
+        if status_filter == 'active':
+            members = members.filter(is_active=True)
+        elif status_filter == 'inactive':
+            members = members.filter(is_active=False)
+
+    if role_filter:
+        members = members.filter(role=role_filter)
+
     paginator = Paginator(members, 12)
     page_number = request.GET.get('page')
     try:
@@ -196,7 +214,15 @@ def member_list(request):
         members = paginator.page(1)
     except EmptyPage:
         members = paginator.page(paginator.num_pages)
-    return render(request, 'library_app/member_list.html', {'members': members})
+
+    context = {
+        'members': members,
+        'query': query,
+        'status_filter': status_filter,
+        'role_filter': role_filter,
+    }
+    return render(request, 'library_app/member_list.html', context)
+
 
 
 @login_required
@@ -210,15 +236,31 @@ def member_detail(request, pk):
 @user_passes_test(librarian_required)
 def member_edit(request, pk):
     member = get_object_or_404(Member, pk=pk)
+
     if request.method == 'POST':
-        form = UserRegistrationForm(request.POST, instance=member.user)
-        if form.is_valid():
-            form.save()
+        user_form = UserUpdateForm(request.POST, instance=member.user)
+        member_form = MemberForm(request.POST, instance=member)
+
+        if user_form.is_valid() and member_form.is_valid():
+            user_form.save()
+            member_obj = member_form.save(commit=False)
+            member_obj.role = request.POST.get('role')
+            member_obj.save()
             messages.success(request, 'Member updated successfully!')
-            return redirect('member_detail', pk=pk)
+            return redirect('member_detail', pk=member.pk)
+        else:
+            # Add this to debug errors
+            print(user_form.errors, member_form.errors)
+
     else:
-        form = UserRegistrationForm(instance=member.user)
-    return render(request, 'library_app/member_form.html', {'form': form})
+        user_form = UserUpdateForm(instance=member.user)
+        member_form = MemberForm(instance=member)
+
+    return render(request, 'library_app/member_form.html', {
+        'user_form': user_form,
+        'member_form': member_form,
+        'title': 'Edit Member'
+    })
 
 
 @login_required
@@ -274,5 +316,147 @@ def get_categories_json(request):
     return JsonResponse(list(categories), safe=False)
 @login_required
 def profile_view(request):
-    # You can pass user data if needed
-    return render(request, 'library_app/profile.html', {'user': request.user})
+    user = request.user
+    # Ensure a Member exists for this user
+    member, created = Member.objects.get_or_create(
+        user=user,
+        defaults={'member_id': f"M{user.id:04d}"}
+    )
+
+    if request.method == 'POST':
+        user_form = UserUpdateForm(request.POST, instance=user)
+        member_form = MemberUpdateForm(request.POST, instance=member)
+
+        if user_form.is_valid() and member_form.is_valid():
+            user_form.save()
+            member_form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('profile')
+        else:
+            messages.error(request, "Please fix the errors below.")
+    else:
+        user_form = UserUpdateForm(instance=user)
+        member_form = MemberUpdateForm(instance=member)
+
+    context = {
+        'user_form': user_form,
+        'member_form': member_form,
+        'member': member,
+    }
+    return render(request, 'library_app/profile.html', context)
+
+# ---------------------- Author CRUD ----------------------
+
+@login_required
+@user_passes_test(librarian_required)
+def author_list(request):
+    authors = Author.objects.all().order_by('name')
+    query = request.GET.get('q', '')
+    if query:
+        authors = authors.filter(name__icontains=query)
+    return render(request, 'library_app/author_list.html', {'authors': authors, 'query': query})
+
+@login_required
+@user_passes_test(librarian_required)
+def author_detail(request, pk):
+    author = get_object_or_404(Author, pk=pk)
+    return render(request, 'library_app/author_detail.html', {'author': author})
+
+@login_required
+@user_passes_test(librarian_required)
+def author_create(request):
+    if request.method == 'POST':
+        form = AuthorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Author added successfully!')
+            return redirect('author_list')
+    else:
+        form = AuthorForm()
+    return render(request, 'library_app/author_form.html', {'form': form, 'title': 'Add Author'})
+
+@login_required
+@user_passes_test(librarian_required)
+def author_update(request, pk):
+    author = get_object_or_404(Author, pk=pk)
+    if request.method == 'POST':
+        form = AuthorForm(request.POST, instance=author)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Author updated successfully!')
+            return redirect('author_detail', pk=author.pk)
+    else:
+        form = AuthorForm(instance=author)
+    return render(request, 'library_app/author_form.html', {'form': form, 'title': 'Edit Author'})
+
+@login_required
+@user_passes_test(librarian_required)
+def author_delete(request, pk):
+    author = get_object_or_404(Author, pk=pk)
+    if request.method == 'POST':
+        author.delete()
+        messages.success(request, 'Author deleted successfully!')
+        return redirect('author_list')
+    return render(request, 'library_app/author_confirm_delete.html', {'author': author})
+
+# ---------------------- Publisher CRUD ----------------------
+
+@login_required
+@user_passes_test(librarian_required)
+def publisher_list(request):
+    query = request.GET.get('q', '')
+    publishers = Publisher.objects.all().order_by('name')
+    if query:
+        publishers = publishers.filter(name__icontains=query)
+    return render(request, 'library_app/publisher_list.html', {'publishers': publishers, 'query': query})
+
+@login_required
+@user_passes_test(librarian_required)
+def publisher_detail(request, pk):
+    publisher = get_object_or_404(Publisher, pk=pk)
+    return render(request, 'library_app/publisher_detail.html', {'publisher': publisher})
+
+@login_required
+@user_passes_test(librarian_required)
+def publisher_create(request):
+    if request.method == 'POST':
+        form = PublisherForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Publisher added successfully!')
+            return redirect('publisher_list')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = PublisherForm()
+
+    return render(request, 'library_app/publisher_form.html', {
+        'form': form,
+        'title': 'Add Publisher'
+    })
+
+
+
+@login_required
+@user_passes_test(librarian_required)
+def publisher_update(request, pk):
+    publisher = get_object_or_404(Publisher, pk=pk)
+    if request.method == 'POST':
+        form = PublisherForm(request.POST, instance=publisher)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Publisher updated successfully!')
+            return redirect('publisher_detail', pk=publisher.pk)
+    else:
+        form = PublisherForm(instance=publisher)
+    return render(request, 'library_app/publisher_form.html', {'form': form, 'title': 'Edit Publisher'})
+
+@login_required
+@user_passes_test(librarian_required)
+def publisher_delete(request, pk):
+    publisher = get_object_or_404(Publisher, pk=pk)
+    if request.method == 'POST':
+        publisher.delete()
+        messages.success(request, 'Publisher deleted successfully!')
+        return redirect('publisher_list')
+    return render(request, 'library_app/publisher_confirm_delete.html', {'publisher': publisher})

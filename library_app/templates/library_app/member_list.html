@@ -1,4 +1,4 @@
-{% extends 'library_app/base.html' %}
+{% extends "library_app/base.html" %}
 
 {% block title %}Members{% endblock %}
 
@@ -23,17 +23,18 @@
                 <div class="col-md-2 mb-3">
                     <select name="status" class="form-select">
                         <option value="">All Statuses</option>
-                        {% for value, label in status_choices %}
-                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
                     </select>
                 </div>
                 <div class="col-md-2 mb-3">
-                    <select name="membership_type" class="form-select">
+                    <select name="role" class="form-select">
                         <option value="">All Types</option>
-                        {% for type in membership_types %}
-                        <option value="{{ type }}" {% if type_filter == type %}selected{% endif %}>{{ type }}</option>
-                        {% endfor %}
+                        <option value="guest" {% if role_filter == 'guest' %}selected{% endif %}>Guest</option>
+                        <option value="student" {% if role_filter == 'student' %}selected{% endif %}>Student</option>
+                        <option value="teacher" {% if role_filter == 'teacher' %}selected{% endif %}>Teacher</option>
+                        <option value="staff" {% if role_filter == 'staff' %}selected{% endif %}>Staff</option>
+                        <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admin</option>
                     </select>
                 </div>
                 <div class="col-md-2 mb-3">
@@ -52,8 +53,8 @@
                 <h5 class="card-title">{{ member.user.get_full_name }}</h5>
                 <p class="card-text">
                     Email: {{ member.user.email }}<br>
-                    Status: {{ member.status }}<br>
-                    Type: {{ member.membership_type }}
+                    Status: {% if member.is_active %}Active{% else %}Inactive{% endif %}<br>
+                    Type: {{ member.role|title }}
                 </p>
             </div>
             <div class="card-footer d-flex justify-content-between">

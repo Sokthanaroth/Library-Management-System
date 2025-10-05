@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'rest_framework',
     'rest_framework.authtoken',
+    'widget_tweaks',
 
     # Local apps
     'library_app',

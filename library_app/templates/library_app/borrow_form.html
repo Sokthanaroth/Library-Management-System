@@ -4,29 +4,46 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-dark text-white">
                 <h3 class="card-title">Borrow Book</h3>
             </div>
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    <div class="mb-3">
-                        <label for="id_book" class="form-label">Book</label>
-                        {{ form.book }}
-                    </div>
-                    <div class="mb-3">
-                        <label for="id_member" class="form-label">Member</label>
-                        {{ form.member }}
-                    </div>
-                    <div class="mb-3">
-                        <label for="id_due_date" class="form-label">Due Date</label>
-                        {{ form.due_date }}
-                    </div>
-                    <div class="d-grid gap-2">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th>Book</th>
+                            <td>{{ form.book }}</td>
+                        </tr>
+                        <tr>
+                            <th>Member</th>
+                            <td>{{ form.member }}</td>
+                        </tr>
+                        <tr>
+                            <th>Borrow Date</th>
+                            <td>
+                                {{ form.borrow_date }}
+                                {% if not form.borrow_date.value %}
+                                    <small class="text-muted">Auto-filled with current date/time</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Due Date</th>
+                            <td>{{ form.due_date }}</td>
+                        </tr>
+                        <tr>
+                            <th>Fine</th>
+                            <td>
+                                $0.00 <small class="text-muted">(Calculated after due date)</small>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'borrowed_books' %}" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">Process Borrow</button>
-                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Cancel</a>
                     </div>
                 </form>
             </div>
@@ -40,8 +57,11 @@
     document.addEventListener('DOMContentLoaded', function() {
         const inputs = document.querySelectorAll('input, select, textarea');
         inputs.forEach(input => {
-            input.classList.add('form-control');
+            if (!input.classList.contains('form-control')) {
+                input.classList.add('form-control');
+            }
         });
     });
 </script>
 {% endblock %}
+ 

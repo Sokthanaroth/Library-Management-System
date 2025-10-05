@@ -1,13 +1,81 @@
-{% extends "base.html" %}
+{% extends "library_app/base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
 {% block content %}
-  <h2>{{ title }}</h2>
-  <form method="post">
-    {% csrf_token %}
-    {% if user_form %}
-      {{ user_form.as_p }}
-    {% endif %}
-    {{ member_form.as_p }}
-    <button type="submit">Save</button>
-    <a href="{% url 'member_list' %}">Cancel</a>
-  </form>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ title }}</h2>
+    <a href="{% url 'member_list' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left-circle"></i> Back to Members
+    </a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-header {% if member_form.instance.pk %}bg-dark{% else %}bg-primary{% endif %} text-white">
+                <h4 class="mb-0">
+                    {% if member_form.instance.pk %}Edit Member{% else %}Add Member{% endif %}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% load widget_tweaks %}
+
+                    {% if user_form %}
+                    <div class="mb-3">
+                        {{ user_form.username.label_tag }}
+                        {{ user_form.username|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ user_form.email.label_tag }}
+                        {{ user_form.email|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ user_form.first_name.label_tag }}
+                        {{ user_form.first_name|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ user_form.last_name.label_tag }}
+                        {{ user_form.last_name|add_class:"form-control" }}
+                    </div>
+                    {% endif %}
+
+                    <div class="mb-3">
+                        {{ member_form.member_id.label_tag }}
+                        {{ member_form.member_id|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ member_form.phone.label_tag }}
+                        {{ member_form.phone|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ member_form.address.label_tag }}
+                        {{ member_form.address|add_class:"form-control" }}
+                    </div>
+
+                    <!-- Role Dropdown -->
+                    <div class="mb-3">
+                        <label for="id_role" class="form-label">Role</label>
+                        <select name="role" id="id_role" class="form-select">
+                            <option value="guest" {% if member_form.instance.role == 'guest' %}selected{% endif %}>Guest</option>
+                            <option value="student" {% if member_form.instance.role == 'student' %}selected{% endif %}>Student</option>
+                            <option value="teacher" {% if member_form.instance.role == 'teacher' %}selected{% endif %}>Teacher</option>
+                            <option value="staff" {% if member_form.instance.role == 'staff' %}selected{% endif %}>Staff</option>
+                            <option value="admin" {% if member_form.instance.role == 'admin' %}selected{% endif %}>Admin</option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <button type="submit" class="btn {% if member_form.instance.pk %}btn-dark{% else %}btn-primary{% endif %}">
+                            Save
+                        </button>
+                        <a href="{% url 'member_list' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

@@ -1,62 +1,71 @@
-{% extends 'library_app/base.html' %}
+{% extends "library_app/base.html" %}
+{% load widget_tweaks %}
 
 {% block title %}My Profile{% endblock %}
 
 {% block content %}
 <div class="row">
+    <!-- Left Column: Profile Update Form -->
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title">Profile Information</h5>
+                <h5 class="card-title">Update Profile</h5>
             </div>
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    
+
+                    <!-- User Fields -->
                     <div class="mb-3">
-                        <label for="id_first_name" class="form-label">First Name</label>
-                        {{ user_form.first_name }}
+                        {{ user_form.username.label_tag }}
+                        {{ user_form.username|add_class:"form-control" }}
                     </div>
-                    
                     <div class="mb-3">
-                        <label for="id_last_name" class="form-label">Last Name</label>
-                        {{ user_form.last_name }}
+                        {{ user_form.email.label_tag }}
+                        {{ user_form.email|add_class:"form-control" }}
                     </div>
-                    
                     <div class="mb-3">
-                        <label for="id_email" class="form-label">Email</label>
-                        {{ user_form.email }}
+                        {{ user_form.first_name.label_tag }}
+                        {{ user_form.first_name|add_class:"form-control" }}
                     </div>
-                    
                     <div class="mb-3">
-                        <label for="id_phone" class="form-label">Phone</label>
-                        {{ member_form.phone }}
+                        {{ user_form.last_name.label_tag }}
+                        {{ user_form.last_name|add_class:"form-control" }}
                     </div>
-                    
+
+                    <!-- Member Fields -->
                     <div class="mb-3">
-                        <label for="id_date_of_birth" class="form-label">Date of Birth</label>
-                        {{ member_form.date_of_birth }}
+                        {{ member_form.member_id.label_tag }}
+                        {{ member_form.member_id|add_class:"form-control" }}
                     </div>
-                    
                     <div class="mb-3">
-                        <label for="id_address" class="form-label">Address</label>
-                        {{ member_form.address }}
+                        {{ member_form.phone.label_tag }}
+                        {{ member_form.phone|add_class:"form-control" }}
                     </div>
-                    
+                    <div class="mb-3">
+                        {{ member_form.date_of_birth.label_tag }}
+                        {{ member_form.date_of_birth|add_class:"form-control" }}
+                    </div>
+                    <div class="mb-3">
+                        {{ member_form.address.label_tag }}
+                        {{ member_form.address|add_class:"form-control" }}
+                    </div>
+
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Update Profile</button>
                     </div>
                 </form>
-                
+
                 <hr>
-                
+
                 <div class="d-grid">
                     <a href="{% url 'change_password' %}" class="btn btn-outline-secondary">Change Password</a>
                 </div>
             </div>
         </div>
     </div>
-    
+
+    <!-- Right Column: Member info summary -->
     <div class="col-md-8">
         <div class="card mb-4">
             <div class="card-header">
@@ -66,22 +75,37 @@
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong>Member ID:</strong> {{ member.member_id }}</p>
-                        <p><strong>Membership Type:</strong> {{ member.get_membership_type_display }}</p>
+                        <p><strong>Role:</strong> {{ member.role|title }}</p>
                         <p><strong>Membership Status:</strong> 
                             <span class="badge bg-{% if member.is_membership_valid %}success{% else %}danger{% endif %}">
-                                {% if member.is_membership_valid %}Active{% else %}Inactive{% endif %}
-                            </span>
+                            {% if member.is_membership_valid %}Active{% else %}Inactive{% endif %}
+                        </span>
+
                         </p>
+
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Membership Date:</strong> {{ member.membership_date }}</p>
-                        <p><strong>Expiration Date:</strong> {{ member.expiration_date }}</p>
-                        <p><strong>Fine Balance:</strong> ${{ member.fine_balance }}</p>
+                        <p><strong>Membership Date:</strong> 
+                            {% if member.membership_date %}
+                                {{ member.membership_date|date:"M d, Y" }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </p>
+                        <p><strong>Expiration Date:</strong> 
+                            {% if member.expiration_date %}
+                                {{ member.expiration_date|date:"M d, Y" }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </p>
+                        <p><strong>Fine Balance:</strong> ${{ member.fine_balance|default:"0.00" }}</p>
                     </div>
                 </div>
             </div>
         </div>
-        
+
+        <!-- Borrowing History -->
         <div class="card mb-4">
             <div class="card-header">
                 <h5 class="card-title">Borrowing History</h5>
@@ -122,13 +146,7 @@
                                         <span class="badge bg-primary">Borrowed</span>
                                     {% endif %}
                                 </td>
-                                <td>
-                                    {% if record.fine_amount %}
-                                        ${{ record.fine_amount }}
-                                    {% else %}
-                                        $0.00
-                                    {% endif %}
-                                </td>
+                                <td>${{ record.fine_amount|default:"0.00" }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -139,7 +157,8 @@
                 {% endif %}
             </div>
         </div>
-        
+
+        <!-- Reservations -->
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title">My Reservations</h5>
@@ -179,15 +198,4 @@
         </div>
     </div>
 </div>
-
-{% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const inputs = document.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-            input.classList.add('form-control');
-        });
-    });
-</script>
-{% endblock %}
 {% endblock %}

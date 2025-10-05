@@ -1,131 +1,169 @@
-{% extends 'library_app/base.html' %}
-
-{% block title %}{{ title }}{% endblock %}
+{% extends "library_app/base.html" %}
+{% load static %}
+{% load widget_tweaks %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2><i class="bi bi-plus-circle"></i> {{ title }}</h2>
-            <a href="{% url 'book_list' %}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Back to Books
-            </a>
+<div class="container mt-5">
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <h3 class="mb-0">Add New Book</h3>
         </div>
-    </div>
-</div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
 
-<div class="row">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title mb-0">Book Information</h4>
-            </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <!-- Basic Information -->
-                    <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label for="id_title" class="form-label">Book Title *</label>
-                            {{ form.title }}
+                <!-- Book Information -->
+                <fieldset class="border rounded p-3 mb-4">
+                    <legend class="fw-bold text-primary">📖 Book Information</legend>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="id_title" class="form-label">Title *</label>
+                            {{ form.title|add_class:"form-control" }}
+                            {{ form.title.errors }}
                         </div>
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-6">
                             <label for="id_isbn" class="form-label">ISBN *</label>
-                            {{ form.isbn }}
+                            {{ form.isbn|add_class:"form-control" }}
+                            {{ form.isbn.errors }}
                         </div>
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="id_new_authors" class="form-label">Authors *</label>
-                            {{ form.new_authors }}
-                            <div class="form-text">{{ form.new_authors.help_text }}</div>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="id_new_publisher" class="form-label">Publisher</label>
-                            {{ form.new_publisher }}
-                            <div class="form-text">{{ form.new_publisher.help_text }}</div>
-                        </div>
-                    </div>
-
-                    <!-- Publication Details -->
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <label for="id_published_date" class="form-label">Published Date</label>
-                            {{ form.published_date }}
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="id_edition" class="form-label">Edition</label>
-                            {{ form.edition }}
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <label for="id_language" class="form-label">Language</label>
-                            {{ form.language }}
-                        </div>
-                    </div>
-
-                    <!-- Additional Details -->
                     <div class="mb-3">
-                        <label for="id_description" class="form-label">Description</label>
-                        {{ form.description }}
+                        <label for="id_subtitle" class="form-label">Subtitle</label>
+                        {{ form.subtitle|add_class:"form-control" }}
+                    </div>
+                </fieldset>
+
+                <!-- Authors & Publisher -->
+                <fieldset class="border rounded p-3 mb-4">
+                    <legend class="fw-bold text-primary">👤 Authors & Publisher</legend>
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Authors *</label>
+                            {{ form.authors|add_class:"form-select" }}
+                            <div class="mt-2">
+                                <a href="{% url 'author_create' %}" class="btn btn-sm btn-outline-primary">+ Add Author</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Or Add New Authors</label>
+                            {{ form.new_authors|add_class:"form-control" }}
+                            <small class="text-muted">{{ form.new_authors.help_text }}</small>
+                        </div>
                     </div>
 
-                    <!-- Categories -->
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Publisher</label>
+                            {{ form.publisher|add_class:"form-select" }}
+                            <div class="mt-2">
+                                <a href="{% url 'publisher_create' %}" class="btn btn-sm btn-outline-primary">+ Add Publisher</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Or Add New Publisher</label>
+                            {{ form.new_publisher|add_class:"form-control" }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Publication Details -->
+                <fieldset class="border rounded p-3 mb-4">
+                    <legend class="fw-bold text-primary">📅 Publication Details</legend>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="id_published_date" class="form-label">Published Date</label>
+                            {{ form.published_date|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_edition" class="form-label">Edition</label>
+                            {{ form.edition|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-4">
+                            <label for="id_language" class="form-label">Language</label>
+                            {{ form.language|add_class:"form-select" }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Classification -->
+                <fieldset class="border rounded p-3 mb-4">
+                    <legend class="fw-bold text-primary">🏷️ Classification</legend>
                     <div class="mb-3">
                         <label class="form-label">Categories</label>
-                        <div class="categories-checkbox-group">
-                            {% for category in categories %}
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="categories" 
-                                       value="{{ category.id }}" id="category-{{ category.id }}"
-                                       style="border-color: {{ category.color }}">
-                                <label class="form-check-label" for="category-{{ category.id }}">
-                                    {{ category.name }}
-                                </label>
-                            </div>
-                            {% endfor %}
+                        {{ form.categories|add_class:"form-select" }}
+                        <div class="mt-2">
+                            <a href="{% url 'category_create' %}" class="btn btn-sm btn-outline-primary">+ Add Category</a>
                         </div>
                     </div>
+                </fieldset>
 
-                    <!-- Form Actions -->
-                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                        <a href="{% url 'book_list' %}" class="btn btn-secondary me-md-2">Cancel</a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg"></i> Add Book
-                        </button>
+                <!-- Additional Details -->
+                <fieldset class="border rounded p-3 mb-4">
+                    <legend class="fw-bold text-primary">📌 Additional Details</legend>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Page Count</label>
+                            {{ form.page_count|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Dimensions</label>
+                            {{ form.dimensions|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Weight</label>
+                            {{ form.weight|add_class:"form-control" }}
+                        </div>
                     </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-lg-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Quick Tips</h5>
-            </div>
-            <div class="card-body">
-                <ul class="small">
-                    <li>ISBN must be 10 or 13 digits</li>
-                    <li>Separate multiple authors with commas</li>
-                    <li>Select relevant categories for better organization</li>
-                    <li>Add publisher if known for better cataloging</li>
-                </ul>
-            </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cover Image</label>
+                        {{ form.cover_image|add_class:"form-control" }}
+                    </div>
+                </fieldset>
+
+                <!-- Acquisition Details -->
+                <fieldset class="border rounded p-3 mb-4">
+                    <legend class="fw-bold text-primary">💰 Acquisition</legend>
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Acquisition Date</label>
+                            {{ form.acquisition_date|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Acquisition Price</label>
+                            {{ form.acquisition_price|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Location</label>
+                            {{ form.location|add_class:"form-control" }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Barcode</label>
+                            {{ form.barcode|add_class:"form-control" }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status *</label>
+                            {{ form.status|add_class:"form-select" }}
+                        </div>
+                    </div>
+                </fieldset>
+
+                <!-- Description -->
+                <fieldset class="border rounded p-3 mb-4">
+                    <legend class="fw-bold text-primary">📝 Description</legend>
+                    <div class="mb-3">
+                        {{ form.description|add_class:"form-control" }}
+                    </div>
+                </fieldset>
+
+                <!-- Buttons -->
+                <div class="d-flex gap-2 justify-content-end">
+                    <button type="submit" class="btn btn-success btn-lg">💾 Save Book</button>
+                    <a href="{% url 'home' %}" class="btn btn-secondary btn-lg">Cancel</a>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block extra_css %}
-<style>
-.categories-checkbox-group {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #e9ecef;
-    padding: 10px;
-    border-radius: 5px;
-}
-</style>
 {% endblock %}

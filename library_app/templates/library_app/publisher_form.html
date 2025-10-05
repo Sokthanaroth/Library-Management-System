@@ -1,0 +1,23 @@
+{% extends "library_app/base.html" %}
+{% block content %}
+<h2>{{ title }}</h2>
+<form method="post">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    {% for field in form %}
+        <div class="mb-3">
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+                <div class="text-danger">{{ field.errors|striptags }}</div>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-success">Save</button>
+</form>
+{% endblock %}

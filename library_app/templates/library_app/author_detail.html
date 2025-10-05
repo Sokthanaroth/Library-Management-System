@@ -1,0 +1,12 @@
+{% extends "library_app/base.html" %}
+{% block content %}
+<h2>{{ author.name }}</h2>
+<p><strong>Bio:</strong> {{ author.bio }}</p>
+<p><strong>Date of Birth:</strong> {{ author.date_of_birth }}</p>
+<p><strong>Date of Death:</strong> {{ author.date_of_death }}</p>
+<p><strong>Nationality:</strong> {{ author.nationality }}</p>
+<p><strong>Website:</strong> <a href="{{ author.website }}">{{ author.website }}</a></p>
+<p><strong>Books:</strong> {{ author.book_count }}</p>
+<a href="{% url 'author_update' author.pk %}" class="btn btn-primary">Edit</a>
+<a href="{% url 'author_delete' author.pk %}" class="btn btn-danger">Delete</a>
+{% endblock %}

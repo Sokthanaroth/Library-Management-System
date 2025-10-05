@@ -1,0 +1,11 @@
+{% extends "library_app/base.html" %}
+{% block content %}
+<h2>{{ publisher.name }}</h2>
+<p><strong>Address:</strong> {{ publisher.address }}</p>
+<p><strong>Phone:</strong> {{ publisher.phone }}</p>
+<p><strong>Email:</strong> {{ publisher.email }}</p>
+<p><strong>Website:</strong> <a href="{{ publisher.website }}">{{ publisher.website }}</a></p>
+<p><strong>Established Year:</strong> {{ publisher.established_year }}</p>
+<a href="{% url 'publisher_update' publisher.pk %}" class="btn btn-primary">Edit</a>
+<a href="{% url 'publisher_delete' publisher.pk %}" class="btn btn-danger">Delete</a>
+{% endblock %}

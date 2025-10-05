@@ -4,7 +4,8 @@ from django.contrib.auth.models import User
 from django.core.validators import MinLengthValidator
 from .models import Book, Author, Publisher, Category, Member, BorrowRecord, Reservation
 import json
-
+from .models import Publisher
+import pycountry
 # ---------------------- Category Form ----------------------
 class CategoryForm(forms.ModelForm):
     class Meta:
@@ -188,7 +189,7 @@ class MemberForm(forms.ModelForm):
     
     class Meta:
         model = Member
-        fields = ['member_id', 'phone', 'address']
+        fields = ['member_id', 'phone', 'address', 'role']  # add role here
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -196,6 +197,7 @@ class MemberForm(forms.ModelForm):
             self.fields['first_name'].initial = self.instance.user.first_name
             self.fields['last_name'].initial = self.instance.user.last_name
             self.fields['email'].initial = self.instance.user.email
+
 
 # ---------------------- Borrow Record Form ----------------------
 class BorrowRecordForm(forms.ModelForm):
@@ -246,3 +248,57 @@ class MemberUpdateForm(forms.ModelForm):
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
             'address': forms.Textarea(attrs={'rows': 3}),
         }
+class AuthorForm(forms.ModelForm):
+    class Meta:
+        model = Author
+        fields = ['name', 'bio', 'date_of_birth', 'date_of_death', 'nationality', 'website']
+        widgets = {
+            'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
+            'date_of_death': forms.DateInput(attrs={'type': 'date'}),
+        }
+from datetime import datetime
+
+class PublisherForm(forms.ModelForm):
+    class Meta:
+        model = Publisher
+        fields = ['name', 'address', 'phone', 'email', 'website', 'established_year']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Publisher name'}),
+            'address': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+            'phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'website': forms.URLInput(attrs={'class': 'form-control'}),
+            'established_year': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 1000,
+                'max': datetime.now().year
+            }),
+        }
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name').strip()
+        if Publisher.objects.filter(name__iexact=name).exists():
+            raise forms.ValidationError("Publisher with this name already exists.")
+        return name
+
+    def clean_established_year(self):
+        year = self.cleaned_data.get('established_year')
+        if year and (year < 1000 or year > datetime.now().year):
+            raise forms.ValidationError(f"Year must be between 1000 and {datetime.now().year}.")
+        return year
+
+
+LANGUAGE_CHOICES = sorted(
+    [(lang.alpha_2, lang.name) for lang in pycountry.languages if hasattr(lang, 'alpha_2')],
+    key=lambda x: x[1]
+)
+
+class BookForm(forms.ModelForm):
+    language = forms.ChoiceField(
+        choices=LANGUAGE_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+
+    class Meta:
+        model = Book
+        fields = '__all__'

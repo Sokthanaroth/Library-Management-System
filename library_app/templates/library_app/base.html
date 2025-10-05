@@ -76,19 +76,17 @@
                             </a>
                         </li>
 
-                        <!-- Only show Borrow/Return if a book is provided -->
-                        {% if book %}
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'borrow_book' book_id=book.id %}">
-                                    <i class="bi bi-box-arrow-in-right me-1"></i> Borrow
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="{% url 'return_book' book_id=book.id %}">
-                                    <i class="bi bi-box-arrow-in-left me-1"></i> Return
-                                </a>
-                            </li>
-                        {% endif %}
+                        <!-- Borrow and Return nav links (no dropdown) -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'borrow_book' book_id=0 %}">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Borrow
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'return_book' book_id=0 %}">
+                                <i class="bi bi-box-arrow-in-left me-1"></i> Return
+                            </a>
+                        </li>
 
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'dashboard' %}">
@@ -170,7 +168,6 @@
     <!-- Custom JS -->
     <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Add Bootstrap classes to form elements
         const inputs = document.querySelectorAll('input, textarea');
         inputs.forEach(input => {
             if (!input.classList.contains('form-control') &&
@@ -192,7 +189,6 @@
         const checks = document.querySelectorAll('input[type="checkbox"], input[type="radio"]');
         checks.forEach(check => check.classList.add('form-check-input'));
 
-        // Logout confirmation
         const logoutForms = document.querySelectorAll('form[action*="logout"]');
         logoutForms.forEach(form => {
             form.addEventListener('submit', function(e) {

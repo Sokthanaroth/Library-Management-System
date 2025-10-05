@@ -1,29 +1,107 @@
-{% extends "base.html" %}
+{% extends "library_app/base.html" %}
+
+{% block title %}Member Details{% endblock %}
+
 {% block content %}
-<h2>Member Detail</h2>
-<p><strong>Name:</strong> {{ member.user.get_full_name }}</p>
-<p><strong>Email:</strong> {{ member.user.email }}</p>
-<p><strong>Member ID:</strong> {{ member.member_id }}</p>
-<p><strong>Phone:</strong> {{ member.phone }}</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Member Details</h2>
+    <div>
+        <a href="{% url 'member_edit' member.id %}" class="btn btn-warning">
+            <i class="bi bi-pencil-square"></i> Edit
+        </a>
+        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ member.id }}">
+            <i class="bi bi-trash"></i> Delete
+        </button>
+        <a href="{% url 'member_list' %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left-circle"></i> Back to Members
+        </a>
+    </div>
+</div>
 
-<h3>Borrow Records</h3>
-<ul>
-  {% for record in borrow_records %}
-    <li>{{ record.book.title }} - Borrowed on {{ record.borrow_date|date:"Y-m-d" }}</li>
-  {% empty %}
-    <li>No borrow history.</li>
-  {% endfor %}
-</ul>
+<div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">{{ member.user.get_full_name|default:member.user.username }}</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Username:</strong> {{ member.user.username }}</p>
+        <p><strong>Email:</strong> {{ member.user.email }}</p>
+        <p><strong>First Name:</strong> {{ member.user.first_name }}</p>
+        <p><strong>Last Name:</strong> {{ member.user.last_name }}</p>
+        <p><strong>Member ID:</strong> {{ member.member_id }}</p>
+        <p><strong>Phone:</strong> {{ member.phone }}</p>
+        <p><strong>Address:</strong> {{ member.address }}</p>
+        <p><strong>Role:</strong> {{ member.role|title }}</p>
+        <p><strong>Active:</strong> {{ member.is_active|yesno:"Yes,No" }}</p>
 
-<h3>Reservations</h3>
-<ul>
-  {% for res in reservations %}
-    <li>{{ res.book.title }} - Reserved on {{ res.reservation_date|date:"Y-m-d" }}</li>
-  {% empty %}
-    <li>No reservations.</li>
-  {% endfor %}
-</ul>
+        {% if member.date_joined %}
+        <p><strong>Date Joined:</strong> {{ member.date_joined|date:"M d, Y H:i" }}</p>
+        {% endif %}
 
-<a href="{% url 'member_edit' member.pk %}">Edit</a> |
-<a href="{% url 'member_delete' member.pk %}">Delete</a>
+        {% if member.updated_at %}
+        <p><strong>Last Updated:</strong> {{ member.updated_at|date:"M d, Y H:i" }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal{{ member.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete member 
+                   <strong>{{ member.user.get_full_name|default:member.user.username }}</strong>?</p>
+                <p class="text-warning">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{% url 'member_delete' member.id %}" method="post" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
+            <h4 class="mb-0">{{ title }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                {% if user_form %}
+                <div class="mb-3">
+                    {{ user_form.username.label_tag }}
+                   {% load widget_tweaks %}
+                    {{ user_form.username|add_class:"form-control" }}
+                </div>
+                <div class="mb-3">
+                    {{ user_form.email.label_tag }}
+                    {{ user_form.email|add_class:"form-control" }}
+                </div>
+                <div class="mb-3">
+                    {{ user_form.first_name.label_tag }}
+                    {{ user_form.first_name|add_class:"form-control" }}
+                </div>
+                <div class="mb-3">
+                    {{ user_form.last_name.label_tag }}
+                    {{ user_form.last_name|add_class:"form-control" }}
+                </div>
+                {% endif %}
+
+                <div class="mb-3">
+                    {{ member_form.member_id.label_tag }}
+                    {{ member_form.member_id|add_class:"form-control" }}
+                </div>
+                <div class="mb-3">
+                    {{ member_form.phone.label_tag }}
+                    {{ member_form.phone|add_class:"form-control" }}
+                </div>
+                <div class="mb-3">
+                    {{ member_form.address.label_tag }}
+                    {{ member_form.address|add_class:"form-control" }}
+                </div>

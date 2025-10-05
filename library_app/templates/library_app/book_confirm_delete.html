@@ -1,11 +1,11 @@
 {% extends "library_app/base.html" %}
 {% block content %}
 <div class="container mt-4">
-  <h3>Are you sure you want to delete member {{ member.user.username }}?</h3>
+  <h3>Are you sure you want to delete "{{ book.title }}"?</h3>
   <form method="post">
     {% csrf_token %}
     <button type="submit" class="btn btn-danger">Yes, Delete</button>
-    <a href="{% url 'member_list' %}" class="btn btn-secondary">Cancel</a>
+    <a href="{% url 'book_detail' book.pk %}" class="btn btn-secondary">Cancel</a>
   </form>
 </div>
 {% endblock %}
