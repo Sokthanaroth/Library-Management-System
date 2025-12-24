@@ -27,7 +27,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    'crispy_forms',
+    
     # Third-party apps
     'rest_framework',
     'rest_framework.authtoken',
@@ -175,7 +176,6 @@ JAZZMIN_SETTINGS = {
         "library_app.Category": "fas fa-tags",
         "library_app.Member": "fas fa-id-card",
         "library_app.BorrowRecord": "fas fa-book-reader",
-        "library_app.Reservation": "fas fa-calendar-check",
     },
     "topmenu_links": [
         {"name": "Home", "url": "admin:index", "permissions": ["auth.view_user"]},

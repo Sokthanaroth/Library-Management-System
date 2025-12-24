@@ -1,132 +1,296 @@
 {% extends 'library_app/base.html' %}
-
 {% block title %}Books{% endblock %}
 
 {% block content %}
+
+<style>
+/* =========================
+   CARD BASE
+========================= */
+.card {
+    border-radius: 14px;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    cursor: pointer;
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 28px rgba(0,0,0,0.15);
+}
+
+/* =========================
+   IMAGE FIT
+========================= */
+.card-img-wrapper {
+    height: 260px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    overflow: hidden;
+    position: relative;
+}
+
+.card-img-top {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* =========================
+   HOVER OVERLAY
+========================= */
+.card-img-wrapper::after {
+    content: "View Details";
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    padding: 4px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.card:hover .card-img-wrapper::after {
+    opacity: 1;
+}
+
+/* =========================
+   BADGES
+========================= */
+.badge-category {
+    font-size: 11px;
+    padding: 5px 9px;
+    border-radius: 20px;
+    margin-right: 4px;
+    color: #fff;
+    text-decoration: none;
+}
+
+/* Status dot */
+.status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+.status-available { background-color: #28a745; }
+.status-unavailable { background-color: #dc3545; }
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 992px) {
+    .col-md-3 { flex: 0 0 50%; max-width: 50%; }
+}
+
+@media (max-width: 576px) {
+    .col-md-3 { flex: 0 0 100%; max-width: 100%; }
+}
+</style>
+
+<!-- =========================
+     HEADER
+========================= -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Book Collection</h2>
+    <h2 class="fw-bold">
+        <i class="bi bi-book me-2"></i> Book Collection
+    </h2>
     {% if user.is_staff %}
-    <a href="{% url 'book_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Add New Book
+    <a href="{% url 'book_create' %}" class="btn btn-primary shadow-sm">
+        <i class="bi bi-plus-circle me-1"></i> Add New Book
     </a>
     {% endif %}
 </div>
 
-<div class="card mb-4">
-    <div class="card-body">
-        <h5 class="card-title">Search & Filter</h5>
-        <form method="get">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <input type="text" name="q" class="form-control" placeholder="Search by title, author, or ISBN..." value="{{ query }}">
-                </div>
-                <div class="col-md-2 mb-3">
-                    <select name="status" class="form-select">
-                        <option value="">All Statuses</option>
-                        {% for value, label in status_choices %}
-                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <!-- ✅ Updated Category Filter -->
-                <div class="col-md-3 mb-3">
-                    <select name="category" class="form-select">
-                        <option value="">All Categories</option>
-                        {% for category in categories %}
-                        <option value="{{ category.id }}" {% if category_filter|default:'' == category.id|stringformat:"s" %}selected{% endif %}>
+<!-- =========================
+     SEARCH & FILTER
+========================= -->
+<div class="card border-0 shadow-sm mb-4 p-3">
+    <h5 class="fw-bold mb-3"><i class="bi bi-funnel me-2"></i> Search & Filter</h5>
+    <form method="get" id="filterForm">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <input type="text" id="liveSearch" class="form-control"
+                       placeholder="Search by title, author, category..."
+                       value="{{ query }}">
+            </div>
+            <div class="col-md-2">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    {% for value, label in status_choices %}
+                        <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="category" class="form-select">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.id }}"
+                        {% if category_filter|default:'' == category.id|stringformat:"s" %}selected{% endif %}>
                             {{ category.name }}
                         </option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="col-md-2 mb-3">
-                    <input type="number" name="year" class="form-control" placeholder="Publication Year" value="{{ year_filter }}" min="1900" max="{% now 'Y' %}">
-                </div>
-                <div class="col-md-1 mb-3">
-                    <button type="submit" class="btn btn-primary w-100">Apply</button>
-                </div>
+                    {% endfor %}
+                </select>
             </div>
-        </form>
-    </div>
+            <div class="col-md-2">
+                <input type="number" name="year" class="form-control"
+                       placeholder="Publication Year" value="{{ year_filter }}">
+            </div>
+            <div class="col-md-1 d-grid">
+                <button type="submit" class="btn btn-primary">Apply</button>
+            </div>
+        </div>
+    </form>
 </div>
 
-<div class="row">
-    {% for book in books %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">{{ book.title }}</h5>
-                <h6 class="card-subtitle mb-2 text-muted">{{ book.authors }}</h6>
+<!-- =========================
+     BOOK CARDS
+========================= -->
+<div class="row g-4" id="booksContainer">
+{% for book in books %}
+    <div class="col-md-3 book-item">
+        <div class="card h-100 shadow-sm">
 
-                <p class="card-text">
-                    <small class="text-muted">ISBN: {{ book.isbn }}</small><br>
-                    {% if book.published_date %}
-                    <small class="text-muted">Published: {{ book.published_date.year }}</small><br>
-                    {% endif %}
-                    {% if book.categories.all %}
-                    <div class="mt-2">
-                        {% for category in book.categories.all %}
-                        <span class="badge" style="background-color: {{ category.color }}; color: white;">
-                            {{ category.name }}
-                        </span>
-                        {% endfor %}
-                    </div>
-                    {% endif %}
-                    <span class="status-{{ book.status }}">
-                        <i class="bi bi-circle-fill"></i> {{ book.get_status_display }}
-                    </span>
-                </p>
-
-                {% if user.is_staff %}
-                <a href="{% url 'book_update' book.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
-                <a href="{% url 'book_delete' book.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+            <!-- BOOK IMAGE -->
+            <a href="{% url 'book_detail' book.pk %}" class="text-decoration-none text-dark">
+            <div class="card-img-wrapper">
+                {% if book.cover_image %}
+                    <img src="{{ book.cover_image.url }}" class="card-img-top" alt="{{ book.title }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x420?text=No+Cover" class="card-img-top" alt="No cover available">
                 {% endif %}
             </div>
+            </a>
+
+            <!-- BOOK INFO -->
+            <div class="card-body d-flex flex-column">
+                <h5 class="fw-bold book-title">{{ book.title }}</h5>
+
+                {% if book.author_names %}
+                    <small class="text-muted mb-1 book-author">{{ book.author_names }}</small>
+                {% endif %}
+
+                {% if book.categories.all %}
+                <div class="mb-2 book-category">
+                    {% for category in book.categories.all %}
+                        <a href="{% url 'category_detail' category.pk %}" class="badge badge-category" style="background-color: {{ category.color }};">{{ category.name }}</a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <small class="mb-2">
+                    <span class="status-dot {% if book.available_copies > 0 %}status-available{% else %}status-unavailable{% endif %}"></span>
+                    {{ book.get_status_display }} • Copies: {{ book.available_copies }}
+                </small>
+
+                {% if book.isbn %}
+                    <small class="text-muted">ISBN: {{ book.isbn }}</small>
+                {% endif %}
+                {% if book.published_date %}
+                    <small class="text-muted">Published: {{ book.published_date.year }}</small>
+                {% endif %}
+
+                <!-- ACTIONS -->
+                <div class="mt-auto d-grid gap-2 mt-3">
+                    {% if user.is_authenticated %}
+                        {% if book.available_copies > 0 %}
+                            <a href="{% url 'borrow_book' book.pk %}" class="btn btn-success btn-sm">Borrow</a>
+                        {% else %}
+                            <button class="btn btn-secondary btn-sm" disabled>Not Available</button>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Login to borrow</a>
+                    {% endif %}
+
+                    <a href="{% url 'book_detail' book.pk %}" class="btn btn-outline-primary btn-sm">Details</a>
+
+                    {% if user.is_staff %}
+                        <div class="d-flex gap-1 flex-wrap">
+                            <a href="{% url 'book_update' book.pk %}" class="btn btn-warning btn-sm flex-fill">Edit</a>
+                            <a href="{% url 'book_delete' book.pk %}" class="btn btn-danger btn-sm flex-fill">Delete</a>
+                            <a href="{% url 'generate_barcode' book.pk %}" class="btn btn-secondary btn-sm flex-fill"><i class="bi bi-upc"></i> Barcode</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
         </div>
     </div>
-    {% empty %}
+{% empty %}
     <div class="col-12">
-        <div class="alert alert-info text-center">
-            No books found. {% if user.is_staff %}<a href="{% url 'book_create' %}">Add the first book</a>{% endif %}
+        <div class="alert alert-info text-center fw-bold">
+            No books found.
+            {% if user.is_staff %} <a href="{% url 'book_create' %}">Add the first book</a> {% endif %}
         </div>
     </div>
-    {% endfor %}
+{% endfor %}
 </div>
 
-<!-- Pagination -->
+<!-- =========================
+     PAGINATION
+========================= -->
 {% if books.has_other_pages %}
-<nav aria-label="Page navigation">
+<nav class="mt-5">
     <ul class="pagination justify-content-center">
-        {% if books.has_previous %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ books.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>
-        </li>
-        {% else %}
-        <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
-        {% endif %}
-
         {% for i in books.paginator.page_range %}
-            {% if books.number == i %}
-            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
-            {% else %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+            <li class="page-item {% if books.number == i %}active{% endif %}">
+                <a class="page-link"
+                   href="?page={{ i }}{% for k,v in request.GET.items %}{% if k != 'page' %}&{{k}}={{v}}{% endif %}{% endfor %}">
+                    {{ i }}
+                </a>
             </li>
-            {% endif %}
         {% endfor %}
-
-        {% if books.has_next %}
-        <li class="page-item">
-            <a class="page-link" href="?page={{ books.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-            </a>
-        </li>
-        {% else %}
-        <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
-        {% endif %}
     </ul>
 </nav>
 {% endif %}
+
+<!-- =========================
+     LIVE SEARCH JS
+========================= -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('liveSearch');
+    const booksContainer = document.getElementById('booksContainer');
+    const bookItems = booksContainer.getElementsByClassName('book-item');
+
+    searchInput.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        Array.from(bookItems).forEach(function(item) {
+            const title = item.querySelector('.book-title').textContent.toLowerCase();
+            const authorElem = item.querySelector('.book-author');
+            const author = authorElem ? authorElem.textContent.toLowerCase() : '';
+            const categoryElem = item.querySelector('.book-category');
+            const categories = categoryElem ? categoryElem.textContent.toLowerCase() : '';
+
+            if (title.includes(filter) || author.includes(filter) || categories.includes(filter)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+
 {% endblock %}

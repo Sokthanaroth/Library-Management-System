@@ -1,11 +1,29 @@
 {% extends "library_app/base.html" %}
 {% block content %}
-<div class="container mt-4">
-  <h3>Are you sure you want to delete "{{ book.title }}"?</h3>
-  <form method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-danger">Yes, Delete</button>
-    <a href="{% url 'book_detail' book.pk %}" class="btn btn-secondary">Cancel</a>
-  </form>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">Confirm Delete</h5>
+                </div>
+                <div class="card-body text-center">
+                    <p class="lead">Are you sure you want to delete the book:</p>
+                    <h4 class="fw-bold text-truncate">{{ book.title }}</h4>
+                    <p class="text-muted">{{ book.author_names }}</p>  {# optional: show authors #}
+                    
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger me-2">
+                            <i class="bi bi-trash"></i> Yes, Delete
+                        </button>
+                        <a href="{% url 'book_detail' book.pk %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

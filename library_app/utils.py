@@ -34,19 +34,3 @@ def send_due_date_reminder(borrow_record):
     
     recipient_list = [borrow_record.member.user.email]
     send_library_email(subject, template_name, context, recipient_list)
-
-def send_reservation_available(reservation):
-    """
-    Send email when a reserved book becomes available
-    """
-    subject = f'Your Reserved Book is Available - {reservation.book.title}'
-    template_name = 'library_app/emails/reservation_available.html'
-    
-    context = {
-        'member': reservation.member,
-        'book': reservation.book,
-        'reservation': reservation,
-    }
-    
-    recipient_list = [reservation.member.user.email]
-    send_library_email(subject, template_name, context, recipient_list)

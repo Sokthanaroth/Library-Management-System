@@ -1,0 +1,153 @@
+{% extends "library_app/base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Borrow Records Management</h2>
+                <a href="{% url 'book_list' %}" class="btn btn-secondary">Back to Books</a>
+            </div>
+
+            <!-- Filters -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label for="status" class="form-label">Status</label>
+                            <select name="status" id="status" class="form-select">
+                                <option value="">All Records</option>
+                                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active (Not Returned)</option>
+                                <option value="returned" {% if status_filter == 'returned' %}selected{% endif %}>Returned</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="member" class="form-label">Member Username</label>
+                            <input type="text" name="member" id="member" class="form-control" value="{{ member_filter }}" placeholder="Search by username">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="overdue" class="form-label">Overdue</label>
+                            <select name="overdue" id="overdue" class="form-select">
+                                <option value="">All</option>
+                                <option value="yes" {% if overdue_filter == 'yes' %}selected{% endif %}>Overdue Only</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">Filter</button>
+                            <a href="{% url 'borrow_records' %}" class="btn btn-outline-secondary">Clear</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Borrow Records Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Borrow Records ({{ borrow_records.paginator.count }})</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Book</th>
+                                    <th>Member</th>
+                                    <th>Borrow Date</th>
+                                    <th>Due Date</th>
+                                    <th>Return Date</th>
+                                    <th>Fine</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in borrow_records %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ record.book.title }}</strong><br>
+                                        <small class="text-muted">{{ record.book.author_names }}</small>
+                                    </td>
+                                    <td>{{ record.member.user.get_full_name|default:record.member.user.username }}</td>
+                                    <td>{{ record.borrow_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        {{ record.due_date|date:"M d, Y" }}
+                                        {% if record.is_overdue and not record.return_date %}
+                                            <br><span class="badge bg-danger">Overdue</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.return_date %}
+                                            {{ record.return_date|date:"M d, Y" }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.fine_amount > 0 %}
+                                            <span class="text-danger">${{ record.fine_amount }}</span>
+                                        {% else %}
+                                            <span class="text-muted">$0.00</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if record.return_date %}
+                                            <span class="badge bg-success">Returned</span>
+                                        {% elif record.is_overdue %}
+                                            <span class="badge bg-danger">Overdue</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Active</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if not record.return_date %}
+                                            <a href="{% url 'return_book' record.id %}" class="btn btn-sm btn-success">Return Book</a>
+                                        {% else %}
+                                            <span class="text-muted">Completed</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">No borrow records found.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if borrow_records.has_other_pages %}
+                    <nav aria-label="Borrow records pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if borrow_records.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ borrow_records.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if member_filter %}&member={{ member_filter }}{% endif %}{% if overdue_filter %}&overdue={{ overdue_filter }}{% endif %}">Previous</a>
+                                </li>
+                            {% endif %}
+
+                            {% for num in borrow_records.paginator.page_range %}
+                                {% if borrow_records.number == num %}
+                                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                                {% elif num > borrow_records.number|add:'-3' and num < borrow_records.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if member_filter %}&member={{ member_filter }}{% endif %}{% if overdue_filter %}&overdue={{ overdue_filter }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if borrow_records.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ borrow_records.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if member_filter %}&member={{ member_filter }}{% endif %}{% if overdue_filter %}&overdue={{ overdue_filter }}{% endif %}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

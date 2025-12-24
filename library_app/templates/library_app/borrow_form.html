@@ -12,37 +12,75 @@
             <div class="card-body">
                 <form method="post">
                     {% csrf_token %}
-                    <table class="table table-bordered">
-                        <tr>
-                            <th>Book</th>
-                            <td>{{ form.book }}</td>
-                        </tr>
-                        <tr>
-                            <th>Member</th>
-                            <td>{{ form.member }}</td>
-                        </tr>
-                        <tr>
-                            <th>Borrow Date</th>
-                            <td>
-                                {{ form.borrow_date }}
-                                {% if not form.borrow_date.value %}
-                                    <small class="text-muted">Auto-filled with current date/time</small>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Due Date</th>
-                            <td>{{ form.due_date }}</td>
-                        </tr>
-                        <tr>
-                            <th>Fine</th>
-                            <td>
-                                $0.00 <small class="text-muted">(Calculated after due date)</small>
-                            </td>
-                        </tr>
-                    </table>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Book Information</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Title</th>
+                                    <td>{{ book.title }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Author(s)</th>
+                                    <td>{{ book.author_names }}</td>
+                                </tr>
+                                <tr>
+                                    <th>ISBN</th>
+                                    <td>{{ book.isbn }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Available Copies</th>
+                                    <td>{{ book.available_copies }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Borrow Details</h5>
+                            <table class="table table-bordered">
+                                <tr>
+                                    <th>Member</th>
+                                    <td>{{ form.member }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Borrow Date</th>
+                                    <td>
+                                        {{ form.borrow_date }}
+                                        {% if not form.borrow_date.value %}
+                                            <small class="text-muted">Auto-filled with current date/time</small>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Due Date</th>
+                                    <td>{{ form.due_date }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Expected Fine</th>
+                                    <td>
+                                        $0.00 <small class="text-muted">(Calculated after due date)</small>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    {% if form.errors %}
+                    <div class="alert alert-danger">
+                        <h6>Please correct the following errors:</h6>
+                        <ul class="mb-0">
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                    <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
                     <div class="d-flex justify-content-between">
-                        <a href="{% url 'borrowed_books' %}" class="btn btn-secondary">Cancel</a>
+                        <a href="{% url 'book_detail' book.id %}" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">Process Borrow</button>
                     </div>
                 </form>

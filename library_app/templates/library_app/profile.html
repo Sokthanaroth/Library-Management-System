@@ -158,44 +158,6 @@
             </div>
         </div>
 
-        <!-- Reservations -->
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title">My Reservations</h5>
-            </div>
-            <div class="card-body">
-                {% if reservations %}
-                <div class="table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>Book</th>
-                                <th>Reservation Date</th>
-                                <th>Expiry Date</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for reservation in reservations %}
-                            <tr>
-                                <td>{{ reservation.book.title }}</td>
-                                <td>{{ reservation.reservation_date|date:"M d, Y" }}</td>
-                                <td>{{ reservation.expiry_date|date:"M d, Y" }}</td>
-                                <td>
-                                    <span class="badge bg-{% if reservation.status == 'active' %}primary{% elif reservation.status == 'fulfilled' %}success{% else %}secondary{% endif %}">
-                                        {{ reservation.get_status_display }}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <p class="text-center">No active reservations.</p>
-                {% endif %}
-            </div>
-        </div>
     </div>
 </div>
 {% endblock %}

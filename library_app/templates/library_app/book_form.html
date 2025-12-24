@@ -1,166 +1,262 @@
-{% extends "library_app/base.html" %}
-{% load static %}
-{% load widget_tweaks %}
+{% extends 'library_app/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white">
-            <h3 class="mb-0">Add New Book</h3>
-        </div>
-        <div class="card-body">
-            <form method="POST" enctype="multipart/form-data" novalidate>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-book me-2"></i>{{ title }}</h2>
+                <a href="{% url 'book_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left-circle me-1"></i>Back to Books
+                </a>
+            </div>
+
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
 
-                <!-- Book Information -->
-                <fieldset class="border rounded p-3 mb-4">
-                    <legend class="fw-bold text-primary">📖 Book Information</legend>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="id_title" class="form-label">Title *</label>
-                            {{ form.title|add_class:"form-control" }}
-                            {{ form.title.errors }}
-                        </div>
-                        <div class="col-md-6">
-                            <label for="id_isbn" class="form-label">ISBN *</label>
-                            {{ form.isbn|add_class:"form-control" }}
-                            {{ form.isbn.errors }}
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="id_subtitle" class="form-label">Subtitle</label>
-                        {{ form.subtitle|add_class:"form-control" }}
-                    </div>
-                </fieldset>
+                <!-- Error Display -->
+                {% if form.errors %}
+                <div class="alert alert-danger">
+                    <h6><i class="bi bi-exclamation-triangle me-1"></i>Please correct the following errors:</h6>
+                    <ul class="mb-0">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
 
-                <!-- Authors & Publisher -->
-                <fieldset class="border rounded p-3 mb-4">
-                    <legend class="fw-bold text-primary">👤 Authors & Publisher</legend>
-                    <div class="row mb-3">
-                        <div class="col-md-12">
-                            <label class="form-label">Authors *</label>
-                            {{ form.authors|add_class:"form-select" }}
-                            <div class="mt-2">
-                                <a href="{% url 'author_create' %}" class="btn btn-sm btn-outline-primary">+ Add Author</a>
+                <div class="row">
+                    <!-- Basic Information -->
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="mb-0"><i class="bi bi-info-circle me-1"></i>Basic Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.title.id_for_label }}" class="form-label">
+                                        <i class="bi bi-book me-1"></i>Title *
+                                    </label>
+                                    {{ form.title }}
+                                    {% if form.title.errors %}
+                                        <div class="text-danger small">{{ form.title.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.subtitle.id_for_label }}" class="form-label">
+                                        <i class="bi bi-book-half me-1"></i>Subtitle
+                                    </label>
+                                    {{ form.subtitle }}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.isbn.id_for_label }}" class="form-label">
+                                        <i class="bi bi-upc me-1"></i>ISBN *
+                                    </label>
+                                    {{ form.isbn }}
+                                    {% if form.isbn.errors %}
+                                        <div class="text-danger small">{{ form.isbn.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.book_type.id_for_label }}" class="form-label">
+                                        <i class="bi bi-tag me-1"></i>Book Type
+                                    </label>
+                                    {{ form.book_type }}
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Or Add New Authors</label>
-                            {{ form.new_authors|add_class:"form-control" }}
-                            <small class="text-muted">{{ form.new_authors.help_text }}</small>
-                        </div>
                     </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-12">
-                            <label class="form-label">Publisher</label>
-                            {{ form.publisher|add_class:"form-select" }}
-                            <div class="mt-2">
-                                <a href="{% url 'publisher_create' %}" class="btn btn-sm btn-outline-primary">+ Add Publisher</a>
+                    <!-- Publication Details -->
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0"><i class="bi bi-building me-1"></i>Publication Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.publisher.id_for_label }}" class="form-label">
+                                        <i class="bi bi-building me-1"></i>Publisher
+                                    </label>
+                                    {{ form.publisher }}
+                                    <small class="text-muted">Select existing publisher</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.new_publisher.id_for_label }}" class="form-label">
+                                        <i class="bi bi-plus-circle me-1"></i>New Publisher
+                                    </label>
+                                    {{ form.new_publisher }}
+                                    <small class="text-muted">Create new publisher if not in list</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.published_date.id_for_label }}" class="form-label">
+                                        <i class="bi bi-calendar me-1"></i>Published Date
+                                    </label>
+                                    {{ form.published_date }}
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.edition.id_for_label }}" class="form-label">
+                                                <i class="bi bi-hash me-1"></i>Edition
+                                            </label>
+                                            {{ form.edition }}
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="{{ form.volume.id_for_label }}" class="form-label">
+                                                <i class="bi bi-stack me-1"></i>Volume
+                                            </label>
+                                            {{ form.volume }}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Or Add New Publisher</label>
-                            {{ form.new_publisher|add_class:"form-control" }}
-                        </div>
                     </div>
-                </fieldset>
+                </div>
 
-                <!-- Publication Details -->
-                <fieldset class="border rounded p-3 mb-4">
-                    <legend class="fw-bold text-primary">📅 Publication Details</legend>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="id_published_date" class="form-label">Published Date</label>
-                            {{ form.published_date|add_class:"form-control" }}
-                        </div>
-                        <div class="col-md-4">
-                            <label for="id_edition" class="form-label">Edition</label>
-                            {{ form.edition|add_class:"form-control" }}
-                        </div>
-                        <div class="col-md-4">
-                            <label for="id_language" class="form-label">Language</label>
-                            {{ form.language|add_class:"form-select" }}
-                        </div>
-                    </div>
-                </fieldset>
+                <!-- Authors and Categories -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="bi bi-people me-1"></i>Authors</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.authors.id_for_label }}" class="form-label">
+                                        <i class="bi bi-people me-1"></i>Authors
+                                    </label>
+                                    {{ form.authors }}
+                                    <small class="text-muted">Select existing authors (hold Ctrl/Cmd to select multiple)</small>
+                                </div>
 
-                <!-- Classification -->
-                <fieldset class="border rounded p-3 mb-4">
-                    <legend class="fw-bold text-primary">🏷️ Classification</legend>
-                    <div class="mb-3">
-                        <label class="form-label">Categories</label>
-                        {{ form.categories|add_class:"form-select" }}
-                        <div class="mt-2">
-                            <a href="{% url 'category_create' %}" class="btn btn-sm btn-outline-primary">+ Add Category</a>
+                                <div class="mb-3">
+                                    <label for="{{ form.new_authors.id_for_label }}" class="form-label">
+                                        <i class="bi bi-plus-circle me-1"></i>New Authors
+                                    </label>
+                                    {{ form.new_authors }}
+                                    <small class="text-muted">Enter multiple authors separated by commas</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </fieldset>
+
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0"><i class="bi bi-tags me-1"></i>Categories</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label class="form-label"><i class="bi bi-check-square me-1"></i>Select Categories</label>
+                                    {{ form.categories }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Additional Details -->
-                <fieldset class="border rounded p-3 mb-4">
-                    <legend class="fw-bold text-primary">📌 Additional Details</legend>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Page Count</label>
-                            {{ form.page_count|add_class:"form-control" }}
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Dimensions</label>
-                            {{ form.dimensions|add_class:"form-control" }}
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Weight</label>
-                            {{ form.weight|add_class:"form-control" }}
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Cover Image</label>
-                        {{ form.cover_image|add_class:"form-control" }}
-                    </div>
-                </fieldset>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                <h5 class="mb-0"><i class="bi bi-gear me-1"></i>Additional Details</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.page_count.id_for_label }}" class="form-label">
+                                        <i class="bi bi-file-earmark me-1"></i>Page Count
+                                    </label>
+                                    {{ form.page_count }}
+                                </div>
 
-                <!-- Acquisition Details -->
-                <fieldset class="border rounded p-3 mb-4">
-                    <legend class="fw-bold text-primary">💰 Acquisition</legend>
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Acquisition Date</label>
-                            {{ form.acquisition_date|add_class:"form-control" }}
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Acquisition Price</label>
-                            {{ form.acquisition_price|add_class:"form-control" }}
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Location</label>
-                            {{ form.location|add_class:"form-control" }}
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Barcode</label>
-                            {{ form.barcode|add_class:"form-control" }}
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Status *</label>
-                            {{ form.status|add_class:"form-select" }}
-                        </div>
-                    </div>
-                </fieldset>
+                                <div class="mb-3">
+                                    <label for="{{ form.acquisition_price.id_for_label }}" class="form-label">
+                                        <i class="bi bi-cash me-1"></i>Acquisition Price
+                                    </label>
+                                    {{ form.acquisition_price }}
+                                </div>
 
-                <!-- Description -->
-                <fieldset class="border rounded p-3 mb-4">
-                    <legend class="fw-bold text-primary">📝 Description</legend>
-                    <div class="mb-3">
-                        {{ form.description|add_class:"form-control" }}
-                    </div>
-                </fieldset>
+                                <div class="mb-3">
+                                    <label for="{{ form.available_copies.id_for_label }}" class="form-label">
+                                        <i class="bi bi-collection me-1"></i>Available Copies *
+                                    </label>
+                                    {{ form.available_copies }}
+                                    {% if form.available_copies.errors %}
+                                        <div class="text-danger small">{{ form.available_copies.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
 
-                <!-- Buttons -->
-                <div class="d-flex gap-2 justify-content-end">
-                    <button type="submit" class="btn btn-success btn-lg">💾 Save Book</button>
-                    <a href="{% url 'home' %}" class="btn btn-secondary btn-lg">Cancel</a>
+                                <div class="mb-3">
+                                    <label for="{{ form.location_name.id_for_label }}" class="form-label">
+                                        <i class="bi bi-geo-alt me-1"></i>Location
+                                    </label>
+                                    {{ form.location_name }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-dark text-white">
+                                <h5 class="mb-0"><i class="bi bi-image me-1"></i>Cover Image & Description</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="{{ form.cover_image.id_for_label }}" class="form-label">
+                                        <i class="bi bi-camera me-1"></i>Cover Image
+                                    </label>
+                                    {{ form.cover_image }}
+                                    <small class="text-muted">Supported formats: JPG, PNG, GIF. Max size: 5MB</small>
+                                    {% if form.instance.cover_image %}
+                                        <div class="mt-2">
+                                            <small class="text-muted">Current image:</small><br>
+                                            <img src="{{ form.instance.cover_image.url }}" alt="Current cover" class="img-thumbnail" style="max-width: 100px;">
+                                        </div>
+                                    {% endif %}
+                                    {% if form.cover_image.errors %}
+                                        <div class="text-danger small mt-1">{{ form.cover_image.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="{{ form.description.id_for_label }}" class="form-label">
+                                        <i class="bi bi-textarea me-1"></i>Description
+                                    </label>
+                                    {{ form.description }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex justify-content-end gap-2 mb-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle me-1"></i>Save Book
+                    </button>
+                    <a href="{% url 'book_list' %}" class="btn btn-secondary">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                    </a>
                 </div>
             </form>
         </div>

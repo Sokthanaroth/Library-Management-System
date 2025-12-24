@@ -1,12 +1,103 @@
 {% extends "library_app/base.html" %}
 {% block content %}
-<h2>{{ author.name }}</h2>
-<p><strong>Bio:</strong> {{ author.bio }}</p>
-<p><strong>Date of Birth:</strong> {{ author.date_of_birth }}</p>
-<p><strong>Date of Death:</strong> {{ author.date_of_death }}</p>
-<p><strong>Nationality:</strong> {{ author.nationality }}</p>
-<p><strong>Website:</strong> <a href="{{ author.website }}">{{ author.website }}</a></p>
-<p><strong>Books:</strong> {{ author.book_count }}</p>
-<a href="{% url 'author_update' author.pk %}" class="btn btn-primary">Edit</a>
-<a href="{% url 'author_delete' author.pk %}" class="btn btn-danger">Delete</a>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-pen-nib me-2"></i>{{ author.name }}</h2>
+                <a href="{% url 'author_list' %}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left-circle me-1"></i>Back to Authors
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0"><i class="bi bi-info-circle me-1"></i>Author Information</h5>
+                        </div>
+                        <div class="card-body">
+                            {% if author.bio %}
+                                <div class="mb-3">
+                                    <strong><i class="bi bi-textarea me-1"></i>Bio:</strong>
+                                    <p class="mt-2">{{ author.bio }}</p>
+                                </div>
+                            {% endif %}
+
+                            <div class="row">
+                                {% if author.date_of_birth %}
+                                    <div class="col-md-6 mb-3">
+                                        <strong><i class="bi bi-calendar me-1"></i>Date of Birth:</strong>
+                                        <p>{{ author.date_of_birth }}</p>
+                                    </div>
+                                {% endif %}
+                                {% if author.date_of_death %}
+                                    <div class="col-md-6 mb-3">
+                                        <strong><i class="bi bi-calendar-x me-1"></i>Date of Death:</strong>
+                                        <p>{{ author.date_of_death }}</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {% if author.nationality %}
+                                <div class="mb-3">
+                                    <strong><i class="bi bi-flag me-1"></i>Nationality:</strong>
+                                    <p>{{ author.nationality }}</p>
+                                </div>
+                            {% endif %}
+
+                            {% if author.website %}
+                                <div class="mb-3">
+                                    <strong><i class="bi bi-link me-1"></i>Website:</strong>
+                                    <p><a href="{{ author.website }}" target="_blank">{{ author.website }}</a></p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if author.books.all %}
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h5 class="mb-0"><i class="bi bi-book me-1"></i>Books by this Author ({{ author.book_count }})</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    {% for book in author.books.all %}
+                                        <a href="{% url 'book_detail' book.pk %}" class="list-group-item list-group-item-action">
+                                            <div class="d-flex w-100 justify-content-between">
+                                                <h6 class="mb-1">{{ book.title }}</h6>
+                                                <small>{{ book.published_date|date:"Y" }}</small>
+                                            </div>
+                                            {% if book.isbn %}
+                                                <small class="text-muted">ISBN: {{ book.isbn }}</small>
+                                            {% endif %}
+                                        </a>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0"><i class="bi bi-gear me-1"></i>Actions</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'author_update' author.pk %}" class="btn btn-primary">
+                                    <i class="bi bi-pencil me-1"></i>Edit Author
+                                </a>
+                                <a href="{% url 'author_delete' author.pk %}" class="btn btn-danger">
+                                    <i class="bi bi-trash me-1"></i>Delete Author
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

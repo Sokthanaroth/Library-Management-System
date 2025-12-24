@@ -3,78 +3,226 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="hero-section text-center">
+
+<style>
+/* =========================
+   CARD BASE
+========================= */
+.card {
+    border-radius: 14px;
+    overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    cursor: pointer; /* make card appear clickable */
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 28px rgba(0,0,0,0.15);
+}
+
+/* =========================
+   IMAGE FIT
+========================= */
+.card-img-wrapper {
+    height: 260px;
+    background: #f3f4f6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    overflow: hidden;
+}
+
+.card-img-top {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* =========================
+   BADGES & BUTTONS
+========================= */
+.badge-category {
+    font-size: 11px;
+    padding: 5px 9px;
+    border-radius: 20px;
+    margin-right: 4px;
+    color: #fff;
+    text-decoration: none;
+}
+
+.card-footer .btn {
+    font-size: 12px;
+}
+
+/* Status dot */
+.status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-available { background-color: #28a745; }
+.status-unavailable { background-color: #dc3545; }
+
+/* =========================
+   RESPONSIVE
+========================= */
+@media (max-width: 992px) {
+    .col-md-3 { flex: 0 0 50%; max-width: 50%; }
+}
+
+@media (max-width: 576px) {
+    .col-md-3 { flex: 0 0 100%; max-width: 100%; }
+}
+</style>
+
+<!-- =========================
+     HERO SECTION
+========================= -->
+<div class="hero-section text-center mb-5">
     <h1 class="display-4">Welcome to Our Library</h1>
-    <p class="lead">Discover, Learn, and Explore with Our Extensive Collection</p>
-    <a href="{% url 'book_list' %}" class="btn btn-primary btn-lg">Browse Collection</a>
+    <p class="lead">Discover, Learn, and Explore with Our Collection</p>
+    <a href="{% url 'book_list' %}" class="btn btn-primary btn-lg">
+        Browse Collection
+    </a>
 </div>
 
+<!-- =========================
+     FEATURES
+========================= -->
 <div class="row mb-5">
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-body text-center">
                 <i class="bi bi-search-heart display-4 text-primary mb-3"></i>
                 <h3>Find Books</h3>
-                <p>Search our extensive collection of books by title, author, or category.</p>
-                <form action="{% url 'book_list' %}" method="get" class="mt-3">
+                <p>Search by title, author, or category.</p>
+                <form action="{% url 'book_list' %}" method="get">
                     <div class="input-group">
                         <input type="text" name="q" class="form-control" placeholder="Search books...">
-                        <button class="btn btn-primary" type="submit">Search</button>
+                        <button class="btn btn-primary">Search</button>
                     </div>
                 </form>
             </div>
         </div>
     </div>
+
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-body text-center">
                 <i class="bi bi-people display-4 text-success mb-3"></i>
                 <h3>Become a Member</h3>
-                <p>Join our library community to borrow books and access exclusive resources.</p>
-                {% if user.is_authenticated %}
-                <a href="{% url 'profile' %}" class="btn btn-success mt-3">View Profile</a>
-                {% else %}
-                <a href="{% url 'register' %}" class="btn btn-success mt-3">Register Now</a>
-                {% endif %}
+                <p>Join our library community.</p>
+                <a href="{% url 'member_create' %}" class="btn btn-success mt-3">
+                    Create Member
+                </a>
             </div>
         </div>
     </div>
+
     <div class="col-md-4">
         <div class="card h-100">
             <div class="card-body text-center">
                 <i class="bi bi-info-circle display-4 text-info mb-3"></i>
-                <h3>Library Information</h3>
-                <p>Find out about our opening hours, policies, and upcoming events.</p>
+                <h3>Library Info</h3>
+                <p>Opening hours & policies.</p>
                 <a href="#" class="btn btn-info mt-3">Learn More</a>
             </div>
         </div>
     </div>
 </div>
 
-<h2 class="mb-4">Recently Added Books</h2>
-<div class="row">
-    {% for book in books %}
-    <div class="col-md-3 mb-4">
-        <div class="card h-100">
-            <div class="card-body">
-                <h5 class="card-title">{{ book.title }}</h5>
-                <h6 class="card-subtitle mb-2 text-muted">{{ book.author }}</h6>
-                <p class="card-text">
-                    <small class="text-muted">ISBN: {{ book.isbn }}</small><br>
-                    <span class="status-{{ book.status }}">
-                        <i class="bi bi-circle-fill"></i> {{ book.get_status_display }}
-                    </span>
-                </p>
+<!-- =========================
+     RECENTLY ADDED BOOKS
+========================= -->
+<h2 class="mb-4 fw-bold">
+    <i class="bi bi-book me-2"></i> Recently Added Books
+</h2>
+
+<div class="row g-4">
+{% for book in books %}
+    <div class="col-md-3">
+        <!-- Card is fully clickable -->
+        <a href="{% url 'book_detail' book.pk %}" class="text-decoration-none text-dark">
+        <div class="card h-100 shadow-sm">
+
+            <!-- BOOK COVER -->
+            <div class="card-img-wrapper">
+                {% if book.cover_image %}
+                    <img src="{{ book.cover_image.url }}" class="card-img-top" alt="{{ book.title }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x420?text=No+Cover" class="card-img-top" alt="No cover available">
+                {% endif %}
             </div>
-            <div class="card-footer">
-                <a href="{% url 'book_detail' book.pk %}" class="btn btn-sm btn-outline-primary">View Details</a>
+
+            <!-- BOOK INFO -->
+            <div class="card-body d-flex flex-column">
+                <h5 class="fw-bold">{{ book.title }}</h5>
+
+                {% if book.author_names %}
+                    <small class="text-muted mb-1">{{ book.author_names }}</small>
+                {% endif %}
+
+                {% if book.categories.all %}
+                <div class="mb-2">
+                    {% for category in book.categories.all %}
+                        <span class="badge badge-category" style="background-color: {{ category.color }};">
+                            {{ category.name }}
+                        </span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <small class="mb-2">
+                    <span class="status-dot {% if book.available_copies > 0 %}status-available{% else %}status-unavailable{% endif %}"></span>
+                    {{ book.get_status_display }} • Copies: {{ book.available_copies }}
+                </small>
+
+                <!-- ACTIONS (not included in link) -->
+                <div class="mt-auto d-grid gap-2 mt-3">
+                    {% if user.is_authenticated %}
+                        {% if book.available_copies > 0 %}
+                            <a href="{% url 'borrow_book' book.pk %}" class="btn btn-success btn-sm">
+                                Borrow
+                            </a>
+                        {% else %}
+                            <button class="btn btn-secondary btn-sm" disabled>
+                                Not Available
+                            </button>
+                        {% endif %}
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-sm">
+                            Login to borrow
+                        </a>
+                    {% endif %}
+
+                    <a href="{% url 'book_detail' book.pk %}" class="btn btn-outline-primary btn-sm">
+                        Details
+                    </a>
+                </div>
             </div>
+
         </div>
+        </a>
     </div>
-    {% empty %}
+{% empty %}
     <div class="col-12">
-        <p class="text-center">No books available yet.</p>
+        <p class="text-center text-muted">No books available yet.</p>
     </div>
-    {% endfor %}
+{% endfor %}
 </div>
+
 {% endblock %}

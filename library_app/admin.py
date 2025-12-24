@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Book, Member, BorrowRecord, Reservation, Author, Category, Publisher
+from .models import Book, Member, BorrowRecord, Author, Category, Publisher
+import uuid
 
 @admin.register(Book)
 class BookAdmin(admin.ModelAdmin):
@@ -22,6 +23,15 @@ class MemberAdmin(admin.ModelAdmin):
     list_filter = ['is_active', 'membership_date']
     search_fields = ['user__first_name', 'user__last_name', 'member_id', 'phone']
     ordering = ['user__last_name']
+    actions = ['generate_library_card']
+
+    # def generate_library_card(self, request, queryset):
+    #     for member in queryset:
+    #         if not member.card_number:
+    #             member.card_number = f"LIB{uuid.uuid4().hex[:8].upper()}"
+    #             member.save()
+    #     self.message_user(request, f'Library cards generated for {queryset.count()} members.')
+    # generate_library_card.short_description = 'Generate library card numbers'
 
 
 @admin.register(BorrowRecord)
@@ -32,12 +42,6 @@ class BorrowRecordAdmin(admin.ModelAdmin):
     date_hierarchy = 'borrow_date'
 
 
-@admin.register(Reservation)
-class ReservationAdmin(admin.ModelAdmin):
-    list_display = ['book', 'member', 'reservation_date', 'status']
-    list_filter = ['status', 'reservation_date']
-    search_fields = ['book__title', 'member__user__first_name']
-    ordering = ['-reservation_date']
 
 
 # Optional: register other models

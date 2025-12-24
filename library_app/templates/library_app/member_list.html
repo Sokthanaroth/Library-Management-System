@@ -6,19 +6,28 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Library Members</h2>
     {% if user.is_staff %}
-    <a href="{% url 'member_create' %}" class="btn btn-primary">
-        <i class="bi bi-plus-circle"></i> Add New Member
-    </a>
+    <div class="btn-group" role="group">
+        {% if user.is_superuser %}
+        <a href="{% url 'user_create' %}" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i> Create User
+        </a>
+        {% endif %}
+        <a href="{% url 'member_create_staff' %}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Create Member
+        </a>
+    </div>
     {% endif %}
 </div>
 
+<!-- Search & Filter -->
 <div class="card mb-4">
     <div class="card-body">
         <h5 class="card-title">Search & Filter</h5>
-        <form method="get">
+        <form method="get" id="filterForm">
             <div class="row">
+                <!-- Live Search -->
                 <div class="col-md-4 mb-3">
-                    <input type="text" name="q" class="form-control" placeholder="Search by name or email..." value="{{ query }}">
+                    <input type="text" id="liveSearch" class="form-control" placeholder="Search by name or email..." value="{{ query }}">
                 </div>
                 <div class="col-md-2 mb-3">
                     <select name="status" class="form-select">
@@ -45,73 +54,129 @@
     </div>
 </div>
 
-<div class="row">
+<!-- Member Cards -->
+<div class="row" id="membersContainer">
     {% for member in members %}
-    <div class="col-md-4 mb-4">
+    <div class="col-md-4 mb-4 member-item">
         <div class="card h-100">
             <div class="card-body">
-                <h5 class="card-title">{{ member.user.get_full_name }}</h5>
+                <h5 class="card-title member-name">{{ member.user.get_full_name|default:member.user.username }}</h5>
                 <p class="card-text">
-                    Email: {{ member.user.email }}<br>
-                    Status: {% if member.is_active %}Active{% else %}Inactive{% endif %}<br>
-                    Type: {{ member.role|title }}
+                    Email: <span class="member-email">{{ member.user.email }}</span><br>
+                    Status: {% if member.is_active %}<span class="text-success">Active</span>{% else %}<span class="text-danger">Inactive</span>{% endif %}<br>
+                    Type: <span class="member-role">{{ member.role|title }}</span><br>
+                    Balance: <span class="member-balance">${{ member.fine_balance }}</span>
                 </p>
             </div>
-            <div class="card-footer d-flex justify-content-between">
-                <a href="{% url 'member_detail' member.id %}" class="btn btn-sm btn-outline-primary">View</a>
-                {% if user.is_staff %}
-                <a href="{% url 'member_edit' member.id %}" class="btn btn-sm btn-primary">Edit</a>
-                {% endif %}
+
+            <div class="card-footer">
+                <div class="btn-group gap-1" role="group">
+
+                    <!-- View -->
+                    <a href="{% url 'member_detail' member.id %}" 
+                       class="btn btn-sm btn-outline-dark px-3 rounded-2 shadow-sm" 
+                       title="View Member">
+                        <i class="bi bi-eye me-1"></i> View
+                    </a>
+
+                    {% if user.is_staff %}
+                    <!-- Edit -->
+                    <a href="{% url 'member_edit' member.id %}" 
+                       class="btn btn-sm btn-primary px-3 rounded-2 shadow-sm" 
+                       title="Edit Member">
+                        <i class="bi bi-pencil-square me-1"></i> Edit
+                    </a>
+
+                    <!-- Top-up -->
+                    <a href="{% url 'member_topup' member.id %}" 
+                       class="btn btn-sm btn-success px-3 rounded-2 shadow-sm" 
+                       title="Add balance / Top-up">
+                        <i class="bi bi-wallet2 me-1"></i> Top-up
+                    </a>
+
+                    <!-- Library Card -->
+                    <a href="{% url 'generate_member_barcode' member.id %}" 
+                       class="btn btn-sm btn-info text-white px-3 rounded-2 shadow-sm" 
+                       title="Generate Library Card">
+                        <i class="bi bi-credit-card-2-front me-1"></i> Card
+                    </a>
+                    {% endif %}
+
+                </div>
             </div>
         </div>
     </div>
     {% empty %}
     <div class="col-12">
         <div class="alert alert-info text-center">
-            No members found. {% if user.is_staff %}<a href="{% url 'member_create' %}">Add the first member</a>{% endif %}
+            No members found. {% if user.is_staff %}<a href="{% url 'member_create_staff' %}">Add the first member</a>{% endif %}
         </div>
     </div>
     {% endfor %}
 </div>
 
-<!-- ✅ Pagination Controls -->
+<!-- Pagination -->
 {% if members.has_other_pages %}
 <nav aria-label="Page navigation">
     <ul class="pagination justify-content-center">
         {% if members.has_previous %}
         <li class="page-item">
-            <a class="page-link" href="?page={{ members.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Previous">
-                <span aria-hidden="true">&laquo;</span>
-            </a>
+            <a class="page-link" href="?page={{ members.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo;</a>
         </li>
         {% else %}
-        <li class="page-item disabled">
-            <span class="page-link">&laquo;</span>
-        </li>
+        <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
         {% endif %}
 
         {% for i in members.paginator.page_range %}
-            {% if members.number == i %}
-            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
-            {% else %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
-            </li>
-            {% endif %}
+        <li class="page-item {% if members.number == i %}active{% endif %}">
+            <a class="page-link" href="?page={{ i }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+        </li>
         {% endfor %}
 
         {% if members.has_next %}
         <li class="page-item">
-            <a class="page-link" href="?page={{ members.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" aria-label="Next">
-                <span aria-hidden="true">&raquo;</span>
-            </a>
+            <a class="page-link" href="?page={{ members.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&raquo;</a>
         </li>
         {% else %}
-        <li class="page-item disabled">
-            <span class="page-link">&raquo;</span>
-        </li>
+        <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
         {% endif %}
     </ul>
 </nav>
 {% endif %}
+
+<!-- Hover Effects -->
+<style>
+.btn-group .btn:hover {
+    transform: translateY(-2px);
+    opacity: 0.95;
+    transition: 0.2s ease-in-out;
+}
+</style>
+
+<!-- =========================
+     LIVE SEARCH JS
+========================= -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('liveSearch');
+    const membersContainer = document.getElementById('membersContainer');
+    const memberItems = membersContainer.getElementsByClassName('member-item');
+
+    searchInput.addEventListener('input', function() {
+        const filter = this.value.toLowerCase();
+        Array.from(memberItems).forEach(function(item) {
+            const name = item.querySelector('.member-name').textContent.toLowerCase();
+            const email = item.querySelector('.member-email').textContent.toLowerCase();
+            const role = item.querySelector('.member-role').textContent.toLowerCase();
+
+            if (name.includes(filter) || email.includes(filter) || role.includes(filter)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+
 {% endblock %}
